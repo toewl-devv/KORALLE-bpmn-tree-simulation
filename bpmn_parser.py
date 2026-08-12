@@ -65,7 +65,7 @@ class BPMNfile:
                         f'Invalid task format: "{temp_name}". Expected "name;time"'
                     )
             else:
-                child_name = child.tag
+                child_name = child.tag.split("}")[-1]
                 child_time = 1.0
 
             child_id = child.get("id") or ""

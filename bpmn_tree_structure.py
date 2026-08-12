@@ -72,7 +72,7 @@ class Tree:
         for child in node.children:
             child_height = self._get_height(child)
             max_child_height = max(max_child_height, child_height)
-        return max_child_height
+        return max_child_height + 1
 
     def get_node(self, node_id):
         return self._get_node(self.root, node_id)

@@ -12,10 +12,11 @@ from time import sleep
 from collections import deque
 
 class Simulation:
-    def __init__(self, fileName):
+    def __init__(self, fileName, timescale:float=1):
         bpmn_xml = bpmn_parser.BPMNfile(fileName)
         process_tree = bpmn_xml.get_tree_structure()
         self.tree = process_tree
+        self.timescale = timescale
     
     def print_timestep(self, timestep: int):
         simulated_tree = self.tree
@@ -66,8 +67,8 @@ class Simulation:
         return time_steps
 
 
-    def simulate(self, timescale:float=1):
-        if timescale <= 0:
+    def simulate(self):
+        if self.timescale <= 0:
             raise ValueError("timescale must be a positive number")
 
         simulated_tree = self.tree
@@ -87,7 +88,7 @@ class Simulation:
             print("Timestep:", time_steps)
             simulated_tree.print_tree_highlight_nodes(current_running_nodes)
             time_steps += 1
-            sleep(1.0 / timescale)
+            sleep(1.0 / self.timescale)
             os.system('clear')
 
 
