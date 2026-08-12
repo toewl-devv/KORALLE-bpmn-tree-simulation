@@ -14,6 +14,7 @@ class TreeNode():
         self.time_needed: float = task_time_needed
         self.children: list[TreeNode] = []
         self.parent: TreeNode | None = None
+        self.time_left = self.time_needed
 
     def add_child(self, child_node):
         if child_node is None:
@@ -110,4 +111,20 @@ class Tree:
             is_last = i == len(node.children) - 1
             child_prefix = "└──" if is_last else "├──"
             self.print_tree(child, level+1, child_prefix)
+
+    def print_tree_highlight_nodes(self, current_nodes, node=None, level=0, prefix="`--"):
+        if node is None:
+            node = self.root
+
+        indent = "| " * level
+
+        if node in current_nodes:
+            print(f'{indent}{prefix}{node.name.upper()}')
+        else:
+            print(f'{indent}{prefix}{node.name.lower()}')
+
+        for i, child in enumerate(node.children):
+            is_last = i == len(node.children) - 1
+            child_prefix = "`--" if is_last else "|--"
+            self.print_tree_highlight_nodes(current_nodes, child, level + 1, child_prefix)
 
