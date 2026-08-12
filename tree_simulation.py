@@ -2,8 +2,7 @@
 This file contains the main simulation code. Using a Tree object, it will run
 through the objects the same way one would run through a BPMN diagram.
 The simulation will use the times provided in the BPMN file to make the simulation more realistic.
-Times will also be slightly randomised to account for IRL random error.
-'''
+Times will also be slightly randomised to account for IRL random error. '''
 
 import bpmn_parser
 import bpmn_tree_structure
@@ -45,6 +44,7 @@ class Simulation:
     def reset_time_lefts(self):
         for node in self.tree.get_nodes():
             node.time_left = node.time_needed
+            #TODO Make this add +- 30% of node.time_needed to add to random error.
 
 
 
