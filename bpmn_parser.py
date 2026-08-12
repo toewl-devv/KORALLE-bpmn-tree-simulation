@@ -1,9 +1,10 @@
 '''
-This file contains the methods needed to parse the BPMN file and
-turn it into a tree using bpmn_tree_structure.py.
-The methods will check that a clean BPMN file is given, and if the
-file is not clean, an error will be given.
+    This file contains the methods needed to parse the BPMN file and
+    turn it into a tree using bpmn_tree_structure.py.
+    The methods will check that a clean BPMN file is given, and if the
+    file is not clean, an error will be given.
 '''
+
 from pathlib import Path
 import bpmn_tree_structure as ts
 import xml.etree.ElementTree as ET
@@ -23,7 +24,9 @@ class BPMNfile:
         # tree is a ElementTree object which makes it easy to read the xml file
         parser = ET.XMLParser(encoding="utf-8")
         tree = ET.parse(fileName, parser=parser)
-
+        
+        if tree is None:
+            raise Exception("no tree found in bpmn file")
         # root <==> <definitions/> for a BPMN file
         root = tree.getroot()
         if root.tag.startswith("{"):
@@ -63,7 +66,7 @@ class BPMNfile:
 
             child_id = child.get("id") or ""
 
-            process_nodes.append(ts.TreeNode(child_name, child_id, child_time))
+            process_nodes.append(ts.TreeNode(child_name, child_id, child.tag, child_time))
 
         nodes_by_id = {node.id: node for node in process_nodes}
         for child in self.process:
@@ -85,7 +88,7 @@ class BPMNfile:
         if len(roots) > 1:
             raise Exception("more than one root was found in the bpmn file")
 
-        bpmn_tree = Tree(roots[0])
+        bpmn_tree = ts.Tree(roots[0])
 
         return bpmn_tree
   
