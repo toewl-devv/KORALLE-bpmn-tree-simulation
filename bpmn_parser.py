@@ -47,48 +47,76 @@ class BPMNfile:
 
     def get_tree_structure(self):
         process_nodes = []
+
         for child in self.process:
             if child.tag.endswith("sequenceFlow"):
                 continue
-            
-            # only tasks have names. If the "name" attribute exists, split it via ";".
-            # Otherwise, use the child.tag, e.g. "exclusiveGateway".
+
+            # Only tasks have names. If the "name" attribute exists,
+            # split it via ";". Otherwise, use the child.tag.
             temp_name = child.get("name")
+
             if temp_name:
                 try:
                     child_name, time = temp_name.split(";")
                     child_time = float(time)
                 except ValueError:
-                    raise ValueError(f'invalid task format: "{temp_name}". Excpected "name;time"')
+                    raise ValueError(
+                        f'Invalid task format: "{temp_name}". Expected "name;time"'
+                    )
             else:
                 child_name = child.tag
                 child_time = 1.0
 
             child_id = child.get("id") or ""
 
-            process_nodes.append(ts.TreeNode(child_name, child_id, child.tag, child_time))
+            process_nodes.append(
+                ts.TreeNode(child_name, child_id, child.tag, child_time)
+            )
 
         nodes_by_id = {node.id: node for node in process_nodes}
+
         for child in self.process:
             if not child.tag.endswith("sequenceFlow"):
                 continue
-            
-            flow_parent = nodes_by_id[child.get("sourceRef")]
-            flow_child = nodes_by_id[child.get("targetRef")]
+
+            flow_parent = nodes_by_id.get(child.get("sourceRef"))
+            flow_child = nodes_by_id.get(child.get("targetRef"))
 
             if flow_parent is None or flow_child is None:
-                raise Exception("sequenceFlow references an unkown node")
+                raise Exception("sequenceFlow references an unknown node")
 
             flow_parent.add_child(flow_child)
 
+        # Find the BPMN root
         roots = [node for node in process_nodes if node.is_root()]
-        
+
         if len(roots) == 0:
             raise Exception("no root was found in the BPMN file")
+
         if len(roots) > 1:
-            raise Exception("more than one root was found in the bpmn file")
+            raise Exception("more than one root was found in the BPMN file")
 
         bpmn_tree = ts.Tree(roots[0])
 
-        return bpmn_tree
-  
+        # Find the unique deepest node
+        max_depth = bpmn_tree.get_height()
+
+        deepest_nodes = [
+            node for node in process_nodes
+            if node.get_depth() == max_depth
+        ]
+
+        if len(deepest_nodes) > 1:
+            raise Exception("more than one node exists at maximum depth")
+
+        last_node = deepest_nodes[0]
+
+        # Add artificial start and end nodes
+        start = ts.TreeNode("start", "startnode", "start", 0.0)
+        end = ts.TreeNode("end", "endnode", "end", 0.0)
+
+        start.add_child(bpmn_tree.root)
+        last_node.add_child(end)
+
+        return ts.Tree(start)
