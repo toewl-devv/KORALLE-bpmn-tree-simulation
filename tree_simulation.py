@@ -9,11 +9,14 @@ import numpy as np
 
 import bpmn_parser
 
+def clear():
+    print("\033[2J\033[H", end="")
+
 class Simulation:
-    def __init__(self, fileName, timescale:float=1):
+    def __init__(self, file_name, timescale:float=1):
         if timescale <= 0:
-            raise ValueError("timecale must be positive")
-        bpmn_xml = bpmn_parser.BPMNfile(fileName)
+            raise ValueError("timescale must be positive")
+        bpmn_xml = bpmn_parser.BpmnFile(file_name)
         process_tree = bpmn_xml.get_tree_structure()
         self.tree = process_tree
         self.timescale = timescale
@@ -85,7 +88,4 @@ class Simulation:
             simulated_tree.print_tree_highlight_nodes(current_running_nodes)
             time_steps += 1
             sleep(1.0 / self.timescale)
-
-def clear():
-    print("\033[2J\033[H", end="")
 

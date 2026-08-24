@@ -4,6 +4,13 @@
     and other functions which will aid in simulation. E.g. get_children_at_depth()
 '''
 
+def highlight(text):
+    return f"\033[1;42m{text}\033[0m"
+
+def non_highlight(text):
+    return f"\033[31m{text}\033[0m"
+
+
 class TreeNode():
     def __init__(self, task_name, task_id, task_type, task_time_needed, task_time_variance):
         self.name: str = task_name
@@ -118,9 +125,9 @@ class Tree:
         indent = "| " * level
 
         if node in current_nodes:
-            print(f'{indent}{prefix}{node.name.upper()}')
+            print(f'{indent}{prefix}{highlight(f" {node.name} ")} ')
         else:
-            print(f'{indent}{prefix}{node.name.lower()}')
+            print(f'{indent}{prefix}{non_highlight(f" {node.name} ")} ')
 
         for i, child in enumerate(node.children):
             is_last = i == len(node.children) - 1

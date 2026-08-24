@@ -20,7 +20,7 @@ def check_file(file_name):
     if not path.is_file():
         raise ValueError("file not found")
 
-class BPMNfile:
+class BpmnFile:
     def __init__(self, file_name):
         # raise an error if the file is invalid
         check_file(file_name)
