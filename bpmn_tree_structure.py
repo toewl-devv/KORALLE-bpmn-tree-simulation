@@ -4,8 +4,6 @@
     and other functions which will aid in simulation. E.g. get_children_at_depth()
 '''
 
-from collections import deque
-
 class TreeNode():
     def __init__(self, task_name, task_id, task_type, task_time_needed, task_time_variance):
         self.name: str = task_name

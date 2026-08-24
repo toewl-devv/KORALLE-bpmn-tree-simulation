@@ -5,25 +5,29 @@
     file is not clean, an error will be given.
 '''
 
-from pathlib import Path
-import bpmn_tree_structure as ts
 import xml.etree.ElementTree as ET
+from pathlib import Path
+
+import bpmn_tree_structure as ts
 
 
-def check_file(fileName):
-    if not fileName.endswith(".bpmn"):
+def check_file(file_name):
+    path = Path(file_name)
+
+    if path.suffix != ".bpmn":
         raise ValueError("file must end with .bpmn")
-    if not Path(fileName).is_file():
+
+    if not path.is_file():
         raise ValueError("file not found")
 
 class BPMNfile:
-    def __init__(self, fileName):
+    def __init__(self, file_name):
         # raise an error if the file is invalid
-        check_file(fileName)
+        check_file(file_name)
         
         # tree is a ElementTree object which makes it easy to read the xml file
         parser = ET.XMLParser(encoding="utf-8")
-        tree = ET.parse(fileName, parser=parser)
+        tree = ET.parse(file_name, parser=parser)
         
         if tree is None:
             raise Exception("no tree found in bpmn file")
@@ -109,8 +113,8 @@ class BPMNfile:
             if node.get_depth() == max_depth
         ]
 
-        if len(deepest_nodes) > 1:
-            raise Exception("more than one node exists at maximum depth")
+        if len(deepest_nodes) != 1:
+            raise ValueError("more than one node exists at maximum depth")
 
         last_node = deepest_nodes[0]
 
