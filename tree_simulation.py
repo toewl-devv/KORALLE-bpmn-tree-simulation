@@ -9,6 +9,7 @@ import bpmn_tree_structure
 import os
 from time import sleep
 from collections import deque
+import numpy as np
 
 class Simulation:
     def __init__(self, fileName, timescale:float=1):
@@ -43,8 +44,9 @@ class Simulation:
 
     def reset_time_lefts(self):
         for node in self.tree.get_nodes():
-            node.time_left = node.time_needed
-            #TODO Make this add +- 30% of node.time_needed to add to random error.
+            # Randomise the time given according to mean and variance given
+            randomised_time = np.random.normal(node.time_needed, np.sqrt(node.time_variance))
+            node.time_left = np.rint(randomised_time)
 
 
 
@@ -68,6 +70,7 @@ class Simulation:
 
 
     def simulate(self):
+        self.reset_time_lefts()
         if self.timescale <= 0:
             raise ValueError("timescale must be a positive number")
 

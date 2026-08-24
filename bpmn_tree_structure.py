@@ -7,7 +7,7 @@
 from collections import deque
 
 class TreeNode():
-    def __init__(self, task_name, task_id, task_type, task_time_needed):
+    def __init__(self, task_name, task_id, task_type, task_time_needed, task_time_variance):
         self.name: str = task_name
         self.id: str = task_id
         self.type: str = task_type
@@ -15,6 +15,7 @@ class TreeNode():
         self.children: list[TreeNode] = []
         self.parent: TreeNode | None = None
         self.time_left = self.time_needed
+        self.time_variance = task_time_variance
 
     def add_child(self, child_node):
         if child_node is None:
