@@ -88,10 +88,14 @@ class Simulation:
                         current_running_nodes.append(child)
                 else:
                     node.time_left -= 1
+
+            # clear screen then print the stuff :D
+            clear()
             print("Timestep:", time_steps)
             simulated_tree.print_tree_highlight_nodes(current_running_nodes)
             time_steps += 1
             sleep(1.0 / self.timescale)
-            os.system('clear')
 
+def clear():
+    print("\033[2J\033[H", end="")
 
