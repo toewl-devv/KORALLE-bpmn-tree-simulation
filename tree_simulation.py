@@ -65,7 +65,7 @@ class Simulation:
             raise ValueError("timestep out of range")
         simulated_trees = [deepcopy(self.tree) for _ in range(n)]
         for tree in simulated_trees:
-            tree.reset_time_lefts()
+            tree.reset_time_lefts(randomise=False)
         current_running_nodes = [[tree.root] for tree in simulated_trees]
 
         # Make each one start t later:
@@ -87,7 +87,7 @@ class Simulation:
     def get_total_time(self, n=1, t=0.0):
         simulated_trees = [deepcopy(self.tree) for _ in range(n)]
         for tree in simulated_trees:
-            tree.reset_time_lefts()
+            tree.reset_time_lefts(randomise=False)
         current_running_nodes = [[tree.root] for tree in simulated_trees]
 
         # Make each one start t later:
