@@ -9,6 +9,7 @@ from copy import deepcopy
 import numpy as np
 
 import bpmn_parser
+import makecolors as mc
 
 def clear():
     print("\033[2J\033[H", end="")
@@ -22,28 +23,35 @@ class Simulation:
         self.tree = process_tree
         self.timescale = timescale
 
-    def reset_time_lefts(self, randomise=True):
-        for node in self.tree.get_nodes():
-            # Randomise the time given according to mean and variance given,
-            # and ensure it isn't negative
-            if randomise:
-                node.time_left = np.rint(
-                        max(0, 
-                            np.random.normal(node.time_needed, np.sqrt(node.time_variance))
-                            )
-                        )
-            else:
-                node.time_left = node.time_needed 
-   
-    def step(self, current_running_nodes, ends):
+    def step(self, current_running_nodes, ends, simulated_trees):
         finished_nodes = [[] for _ in current_running_nodes]
+
+        # Count how many processes are currently on each node
+        occupied = {}
+
+        for process in current_running_nodes:
+            for running_node in process:
+                occupied[running_node.id] = occupied.get(running_node.id, 0) + 1
 
         for i, process in enumerate(current_running_nodes):
             for node in process:
                 if node == ends[i][0]:
                     pass
+
                 elif node.time_left <= 0:
-                    finished_nodes[i].append(node)
+                    # Check whether every child has available capacity
+                    if all(
+                        occupied.get(child.id, 0) < child.max_capacity
+                        for child in node.children
+                    ):
+                        finished_nodes[i].append(node)
+
+                        # Reserve one slot on every child
+                        for child in node.children:
+                            occupied[child.id] = occupied.get(child.id, 0) + 1
+                    else:
+                        simulated_trees[i].time_spent_waiting += 1
+
                 else:
                     node.time_left -= 1
 
@@ -52,34 +60,12 @@ class Simulation:
                 process.extend(node.children)
 
 
-    def print_timestep(self, timestep: int):
-        self.reset_time_lefts()
-        simulated_tree = self.tree
-        current_running_nodes = [simulated_tree.root]
-        time_steps = 0
-        end = simulated_tree.get_node("endnode")
-        while current_running_nodes != [end]:
-            self.step(current_running_nodes, end)
-            if time_steps == timestep:
-                print("Timestep:", time_steps)
-                simulated_tree.print_tree_highlight_nodes(current_running_nodes)
-                break
-            time_steps += 1
-
-    def get_total_time(self):
-        self.reset_time_lefts(randomise=False)
-        current_running_nodes = [self.tree.root]
-        time_steps = 0
-        end = self.tree.get_node("endnode")
-        while current_running_nodes != [end]:
-            self.step(current_running_nodes, end)
-            time_steps += 1
-
-        return time_steps
-
-    def simulate(self, n=1, t=0.0):
-        self.reset_time_lefts()
+    def print_timestep(self, timestep: int, n=1, t=0.0):
+        if not (0 < timestep < self.get_total_time()):
+            raise ValueError("timestep out of range")
         simulated_trees = [deepcopy(self.tree) for _ in range(n)]
+        for tree in simulated_trees:
+            tree.reset_time_lefts()
         current_running_nodes = [[tree.root] for tree in simulated_trees]
 
         # Make each one start t later:
@@ -90,12 +76,66 @@ class Simulation:
         time_steps = 0
         ends = [[tree.get_node("endnode")] for tree in simulated_trees]
         while current_running_nodes != ends:
-            self.step(current_running_nodes, ends)
-            clear()
+            if time_steps == timestep:
+                # print the tree w many processes
+                print("Time step:", time_steps)
+                self.tree.print_tree_processes(current_running_nodes, n)
+                break
+            self.step(current_running_nodes, ends, simulated_trees)
+            time_steps += 1
+
+    def get_total_time(self, n=1, t=0.0):
+        simulated_trees = [deepcopy(self.tree) for _ in range(n)]
+        for tree in simulated_trees:
+            tree.reset_time_lefts()
+        current_running_nodes = [[tree.root] for tree in simulated_trees]
+
+        # Make each one start t later:
+        for i, nodes in enumerate(current_running_nodes):
+            nodes[0].time_left += t*i
+        
+        # Start simulation
+        time_steps = 0
+        ends = [[tree.get_node("endnode")] for tree in simulated_trees]
+        while current_running_nodes != ends:
+            self.step(current_running_nodes, ends, simulated_trees)
+            time_steps += 1
+
+        return time_steps
+
+    def simulate(self, n=1, t=0.0):
+        simulated_trees = [deepcopy(self.tree) for _ in range(n)]
+        for tree in simulated_trees:
+            tree.reset_time_lefts()
+        current_running_nodes = [[tree.root] for tree in simulated_trees]
+
+        # Make each one start t later:
+        for i, nodes in enumerate(current_running_nodes):
+            nodes[0].time_left += t*i
+        
+        # Start simulation
+        time_steps = 0
+        ends = [[tree.get_node("endnode")] for tree in simulated_trees]
+        while True:
             # print the tree w many processes
+            clear()
             print("Time step:", time_steps)
             self.tree.print_tree_processes(current_running_nodes, n)
-            time_steps += 1
-            sleep(1.0 / self.timescale)
+            
+            if current_running_nodes == ends:
+                break
 
+            self.step(current_running_nodes, ends, simulated_trees)
+            time_steps += 1
+
+            sleep(1.0 / self.timescale)
+        
+        # simulation ended
+        sleep(2)
+        
+        print("\nTimesteps spent waiting:")
+        for process, tree in enumerate(simulated_trees):
+            print(mc.highlight_process(f"{process + 1}: {tree.time_spent_waiting}", process))
+
+        input("press <enter> to quit")
 

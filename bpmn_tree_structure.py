@@ -5,30 +5,19 @@
 '''
 
 from collections import Counter
+import numpy as np
 
-def highlight(text):
-    return f"\033[1;42m{text}\033[0m"
-
-def non_highlight(text):
-    return f"\033[31m{text}\033[0m"
-
-PROCESS_COLORS = [
-    "\033[31m",  # red
-    "\033[32m",  # green
-    "\033[33m",  # yellow
-    "\033[34m",  # blue
-    "\033[35m",  # magenta
-    "\033[36m",  # cyan
-]
-RESET = "\033[0m"
-
-def highlight_process(text, process):
-    color = PROCESS_COLORS[process % len(PROCESS_COLORS)]
-    return f"{color}{text}{RESET}"
-
+import makecolors as mc
 
 class TreeNode():
-    def __init__(self, task_name, task_id, task_type, task_time_needed, task_time_variance):
+    def __init__(self, 
+                 task_name,
+                 task_id,
+                 task_type, 
+                 task_time_needed, 
+                 task_time_variance, 
+                 task_max_capacity
+                 ):
         self.name: str = task_name
         self.id: str = task_id
         self.type: str = task_type
@@ -37,6 +26,7 @@ class TreeNode():
         self.parent: TreeNode | None = None
         self.time_left = self.time_needed
         self.time_variance = task_time_variance
+        self.max_capacity = task_max_capacity
 
     def add_child(self, child_node):
         if child_node is None:
@@ -66,7 +56,21 @@ class TreeNode():
 class Tree:
     def __init__(self, root_node):
         self.root: TreeNode = root_node
+        self.time_spent_waiting = 0
 
+    def reset_time_lefts(self, randomise=True):
+        for node in self.get_nodes():
+            # Randomise the time given according to mean and variance given,
+            # and ensure it isn't negative
+            if randomise:
+                node.time_left = np.rint(
+                        max(0, 
+                            np.random.normal(node.time_needed, np.sqrt(node.time_variance))
+                            )
+                        )
+            else:
+                node.time_left = node.time_needed 
+ 
     def get_root(self):
         return self.root
 
@@ -141,9 +145,9 @@ class Tree:
         indent = "| " * level
 
         if node in current_nodes:
-            print(f'{indent}{prefix}{highlight(f" {node.name} ")} ')
+            print(f'{indent}{prefix}{mc.highlight(f" {node.name} ")} ')
         else:
-            print(f'{indent}{prefix}{non_highlight(f" {node.name} ")} ')
+            print(f'{indent}{prefix}{mc.non_highlight(f" {node.name} ")} ')
 
         for i, child in enumerate(node.children):
             is_last = i == len(node.children) - 1
@@ -166,7 +170,7 @@ class Tree:
         ]
 
         # colour in the stars depending which process is running
-        stars = "".join(highlight_process("*", process) for process in processes)
+        stars = "".join(mc.highlight_process("*", process) for process in processes)
 
         # the indent to the whole tree is enough space to show all processes (length n)
         process_area = stars + " " * (n-len(processes))

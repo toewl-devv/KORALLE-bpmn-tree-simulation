@@ -62,22 +62,30 @@ class BpmnFile:
 
             if temp_name:
                 try:
-                    child_name, time, variance = temp_name.split(";")
+                    child_name, time, variance, capacity = temp_name.split(";")
                     child_time = float(time)
                     child_variance = float(variance)
+                    child_capacity = int(capacity)
                 except ValueError:
                     raise ValueError(
-                        f'Invalid task format: "{temp_name}". Expected "name;time;variance"'
+                        f'Invalid task format: "{temp_name}". Expected "name;time;variance;capacity"'
                     )
             else:
                 child_name = child.tag.split("}")[-1]
                 child_time = 1.0
                 child_variance = 0.0
+                child_capacity = 1
 
             child_id = child.get("id") or ""
 
             process_nodes.append(
-                ts.TreeNode(child_name, child_id, child.tag, child_time, child_variance)
+                    ts.TreeNode(child_name,
+                                child_id,
+                                child.tag, 
+                                child_time, 
+                                child_variance, 
+                                child_capacity
+                    )
             )
 
         nodes_by_id = {node.id: node for node in process_nodes}
@@ -119,9 +127,9 @@ class BpmnFile:
         last_node = deepest_nodes[0]
 
         # Add artificial start and end nodes
-        # Recall this in the form name, id, type, time, variance
-        start = ts.TreeNode("start", "startnode", "start", 0.0, 0.0)
-        end = ts.TreeNode("end", "endnode", "end", 0.0, 0.0)
+        # Recall this in the form name, id, type, time, variance, capacity
+        start = ts.TreeNode("start", "startnode", "start", 0.0, 0.0, 9999)
+        end = ts.TreeNode("end", "endnode", "end", 0.0, 0.0, 9999)
 
         start.add_child(bpmn_tree.root)
         last_node.add_child(end)
