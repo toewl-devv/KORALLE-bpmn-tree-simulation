@@ -17,7 +17,7 @@ import tree_simulation
 
 file_name = input("File name: ")
 
-simulation = tree_simulation.Simulation(file_name, timescale=3)
+simulation = tree_simulation.Simulation(file_name, timescale=1)
 input("Press <enter> to start simulation")
 os.system('clear')
-simulation.simulate()
+simulation.simulatemany(n=3, t=1)

@@ -4,6 +4,8 @@
     and other functions which will aid in simulation. E.g. get_children_at_depth()
 '''
 
+from collections import Counter
+
 def highlight(text):
     return f"\033[1;42m{text}\033[0m"
 
@@ -134,3 +136,35 @@ class Tree:
             child_prefix = "`--" if is_last else "|--"
             self.print_tree_highlight_nodes(current_nodes, child, level + 1, child_prefix)
 
+
+    def print_tree_processes(
+        self, current_running_nodes, n, node=None, level=0,
+        prefix="`--", process_counts=None
+    ):
+        if node is None:
+            node = self.root
+            process_counts = Counter(
+                running_node
+                for process in current_running_nodes
+                for running_node in process
+            )
+
+        count = process_counts.get(node, 0)
+
+        process_area = "*" * count + " " * (n - count)
+        tree_indent = "| " * level
+
+        print(f"{process_area}{tree_indent}{prefix} {node.name}")
+
+        for i, child in enumerate(node.children):
+            is_last = i == len(node.children) - 1
+            child_prefix = "`--" if is_last else "|--"
+
+            self.print_tree_processes(
+                current_running_nodes,
+                n,
+                child,
+                level + 1,
+                child_prefix,
+                process_counts
+            )
