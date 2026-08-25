@@ -40,7 +40,7 @@ In this case, the simulation will run three times faster than usual when we star
 
 Now we can use other commands.
 ## Features of `Simulation`
-### `simulate(n=1, t=0.0)`
+##### `simulate(n=1, t=0.0)`
 Runs the entire simulation for the given BPMN file. The current timestep is displayed at the top and currently active tasks are marked with an asterisk *.
 
 `n` specifies the number of processes to run (default 1) and `t` specifies the time which the simulation should wait between starting consecutive processes (default 0).
@@ -50,12 +50,12 @@ At the end of the simulation, a report of how the simulation went is shown.
 
 > [!NOTE]
 > A simulation ran with the exact same input values may not always result in the same output, this is because the time it takes for tasks to run is randomised according to a normally distributed variable with mean and variance given in the BPMN diagram (see [constraints](#BPMN-Diagram-Constaints:)).
-### `print_timestep(timestep, n=1, t=0.0)`
+##### `print_timestep(timestep, n=1, t=0.0)`
 Prints one point in time (timestep) of the full simulation. The given value `timestep` must be non-negative and less than the maximum timestep value.
 
 `print_timestep` assumes tasks take their mean amount of time every time with no randomness.
 
-### `get_max_time(n=1, t=0.0)`
+##### `get_max_time(n=1, t=0.0)`
 Returns the maximum timestep reached in a simulation.
 
 `get_max_time` assumes tasks take their mean amount of time every time with no randomness.
