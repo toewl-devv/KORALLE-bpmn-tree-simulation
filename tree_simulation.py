@@ -77,23 +77,7 @@ class Simulation:
 
         return time_steps
 
-
     def simulate(self, n=1, t=0.0):
-        self.reset_time_lefts()
-        simulated_tree = self.tree
-        current_running_nodes = [simulated_tree.root]
-        time_steps = 0
-        end = simulated_tree.get_node("endnode")
-        while current_running_nodes != [end]:
-            self.step(current_running_nodes, end)
-            # clear screen then print the tree
-            clear()
-            print("Timestep:", time_steps)
-            simulated_tree.print_tree_highlight_nodes(current_running_nodes)
-            time_steps += 1
-            sleep(1.0 / self.timescale)
-
-    def simulatemany(self, n=1, t=0.0):
         self.reset_time_lefts()
         simulated_trees = [deepcopy(self.tree) for _ in range(n)]
         current_running_nodes = [[tree.root] for tree in simulated_trees]
@@ -109,6 +93,7 @@ class Simulation:
             self.step(current_running_nodes, ends)
             clear()
             # print the tree w many processes
+            print("Time step:", time_steps)
             self.tree.print_tree_processes(current_running_nodes, n)
             time_steps += 1
             sleep(1.0 / self.timescale)

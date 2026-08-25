@@ -17,7 +17,8 @@ import tree_simulation
 
 file_name = input("File name: ")
 
-simulation = tree_simulation.Simulation(file_name, timescale=1)
+simulation = tree_simulation.Simulation(file_name, timescale=5)
 input("Press <enter> to start simulation")
-os.system('clear')
-simulation.simulatemany(n=3, t=1)
+print("\033[2J\033[H", end="")
+simulation.simulate(n=6, t=4)
+print("\033[2J\033[H", end="")

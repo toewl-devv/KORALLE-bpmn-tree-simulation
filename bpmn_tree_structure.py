@@ -12,6 +12,20 @@ def highlight(text):
 def non_highlight(text):
     return f"\033[31m{text}\033[0m"
 
+PROCESS_COLORS = [
+    "\033[31m",  # red
+    "\033[32m",  # green
+    "\033[33m",  # yellow
+    "\033[34m",  # blue
+    "\033[35m",  # magenta
+    "\033[36m",  # cyan
+]
+RESET = "\033[0m"
+
+def highlight_process(text, process):
+    color = PROCESS_COLORS[process % len(PROCESS_COLORS)]
+    return f"{color}{text}{RESET}"
+
 
 class TreeNode():
     def __init__(self, task_name, task_id, task_type, task_time_needed, task_time_variance):
@@ -136,25 +150,30 @@ class Tree:
             child_prefix = "`--" if is_last else "|--"
             self.print_tree_highlight_nodes(current_nodes, child, level + 1, child_prefix)
 
-
     def print_tree_processes(
-        self, current_running_nodes, n, node=None, level=0,
-        prefix="`--", process_counts=None
+        self, current_running_nodes, n, node=None, level=0, prefix="`--",
+        process_counts=None
     ):
         if node is None:
             node = self.root
-            process_counts = Counter(
-                running_node
-                for process in current_running_nodes
-                for running_node in process
-            )
 
-        count = process_counts.get(node, 0)
+        # processes is the list of process numbers (indices) which are running
+        # the node we are printing
+        processes = [
+            i
+            for i, process in enumerate(current_running_nodes)
+            if any(running_node.id == node.id for running_node in process)
+        ]
 
-        process_area = "*" * count + " " * (n - count)
-        tree_indent = "| " * level
+        # colour in the stars depending which process is running
+        stars = "".join(highlight_process("*", process) for process in processes)
 
-        print(f"{process_area}{tree_indent}{prefix} {node.name}")
+        # the indent to the whole tree is enough space to show all processes (length n)
+        process_area = stars + " " * (n-len(processes))
+        indent = "| " * level
+
+        # print ther line and call the next line(s) to print
+        print(f"{process_area}{indent}{prefix} {node.name}")
 
         for i, child in enumerate(node.children):
             is_last = i == len(node.children) - 1
