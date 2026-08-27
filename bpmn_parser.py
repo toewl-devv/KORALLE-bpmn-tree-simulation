@@ -10,6 +10,15 @@ from pathlib import Path
 
 import bpmn_tree_structure as ts
 
+def check_values(child_time, child_variance, child_capacity, child_failchance):
+    if child_time < 0:
+        raise ValueError(f"task time must be non-negative ({child_time} given)")
+    if child_variance < 0:
+        raise ValueError(f"task time variance must be non-negative ({child_variance} given)")
+    if child_capacity <= 0:
+        raise ValueError(f"task capacity must non-zero positive ({child_capacity} given)")
+    if not (0 <= child_failchance <= 1):
+        raise ValueError(f"task failure chance out of range [0,1] ({child_failchance} given)")
 
 def check_file(file_name):
     path = Path(file_name)
@@ -62,19 +71,25 @@ class BpmnFile:
 
             if temp_name:
                 try:
-                    child_name, time, variance, capacity = temp_name.split(";")
+                    child_name, time, variance, capacity, failchance = temp_name.split(";")
                     child_time = float(time)
                     child_variance = float(variance)
                     child_capacity = int(capacity)
+                    child_failchance = float(failchance)
+
                 except ValueError:
                     raise ValueError(
-                        f'Invalid task format: "{temp_name}". Expected "name;time;variance;capacity"'
+                        f'Invalid task format: "{temp_name}". Expected "name;time;variance;capacity,failchance"'
                     )
             else:
                 child_name = child.tag.split("}")[-1]
                 child_time = 1.0
                 child_variance = 0.0
                 child_capacity = 1
+                child_failchance = 0.0
+
+            # check for value errors
+            check_values(child_time, child_variance, child_capacity, child_failchance)
 
             child_id = child.get("id") or ""
 
@@ -84,7 +99,8 @@ class BpmnFile:
                                 child.tag, 
                                 child_time, 
                                 child_variance, 
-                                child_capacity
+                                child_capacity,
+                                child_failchance
                     )
             )
 
@@ -128,8 +144,8 @@ class BpmnFile:
 
         # Add artificial start and end nodes
         # Recall this in the form name, id, type, time, variance, capacity
-        start = ts.TreeNode("start", "startnode", "start", 0.0, 0.0, 9999)
-        end = ts.TreeNode("end", "endnode", "end", 0.0, 0.0, 9999)
+        start = ts.TreeNode("start", "startnode", "start", 0.0, 0.0, 9999, 0.0)
+        end = ts.TreeNode("end", "endnode", "end", 0.0, 0.0, 9999, 0.0)
 
         start.add_child(bpmn_tree.root)
         last_node.add_child(end)

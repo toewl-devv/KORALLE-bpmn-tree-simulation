@@ -7,6 +7,7 @@ Times will also be slightly randomised to account for IRL random error. '''
 from time import sleep
 from copy import deepcopy
 import numpy as np
+import random
 
 import bpmn_parser
 import makecolors as mc
@@ -40,17 +41,21 @@ class Simulation:
 
                 elif node.time_left <= 0:
                     # Check whether every child has available capacity
-                    if all(
-                        occupied.get(child.id, 0) < child.max_capacity
-                        for child in node.children
-                    ):
-                        finished_nodes[i].append(node)
-
-                        # Reserve one slot on every child
-                        for child in node.children:
-                            occupied[child.id] = occupied.get(child.id, 0) + 1
+                    if random.random() < node.failure_chance:
+                        node.time_left = node.time_needed
+                        self.tree.get_node(node.id).failures += 1
                     else:
-                        simulated_trees[i].time_spent_waiting += 1
+                        if all(
+                            occupied.get(child.id, 0) < child.max_capacity
+                            for child in node.children
+                        ):
+                            finished_nodes[i].append(node)
+
+                            # Reserve one slot on every child
+                            for child in node.children:
+                                occupied[child.id] = occupied.get(child.id, 0) + 1
+                        else:
+                            simulated_trees[i].time_spent_waiting += 1
 
                 else:
                     node.time_left -= 1
@@ -64,6 +69,7 @@ class Simulation:
         if not (0 < timestep < self.get_total_time()):
             raise ValueError("timestep out of range")
         simulated_trees = [deepcopy(self.tree) for _ in range(n)]
+
         for tree in simulated_trees:
             tree.reset_time_lefts(randomise=False)
         current_running_nodes = [[tree.root] for tree in simulated_trees]
@@ -131,11 +137,46 @@ class Simulation:
             sleep(1.0 / self.timescale)
         
         # simulation ended
+
         sleep(2)
+        clear()
+
+        # print simulation report
+
+        tree_lines, report_lines = self.print_tree_report()
+        tree_width = max(len(line) for line in tree_lines) + 4
         
+        for line, fails in zip(tree_lines, report_lines):
+            print(line + " "*(tree_width-len(line)) + f"{fails}")
+
         print("\nTimesteps spent waiting:")
         for process, tree in enumerate(simulated_trees):
             print(mc.highlight_process(f"{process + 1}: {tree.time_spent_waiting}", process))
 
         input("press <enter> to quit")
+
+    def print_tree_report(self, node=None, level=0, prefix="├──"):
+        if node is None:
+            node = self.tree.root
+
+        output_lines = []
+        report_lines = []
+
+        indent = "│ " * level
+        output_lines.append(f"{indent}{prefix}{node.name}")
+        report_lines.append(f"{node.failures}")
+
+        for i, child in enumerate(node.children):
+            is_last = i == len(node.children) - 1
+            child_prefix = "└──" if is_last else "├──"
+
+            child_output, child_report = self.print_tree_report(
+                child, level + 1, child_prefix
+            )
+
+            output_lines.extend(child_output)
+            report_lines.extend(child_report)
+
+        return output_lines, report_lines
+
 

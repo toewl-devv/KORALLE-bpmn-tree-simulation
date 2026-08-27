@@ -16,7 +16,8 @@ class TreeNode():
                  task_type, 
                  task_time_needed, 
                  task_time_variance, 
-                 task_max_capacity
+                 task_max_capacity,
+                 task_failure_chance
                  ):
         self.name: str = task_name
         self.id: str = task_id
@@ -26,7 +27,9 @@ class TreeNode():
         self.parent: TreeNode | None = None
         self.time_left = self.time_needed
         self.time_variance = task_time_variance
+        self.failure_chance = task_failure_chance
         self.max_capacity = task_max_capacity
+        self.failures = 0
 
     def add_child(self, child_node):
         if child_node is None:
@@ -70,6 +73,7 @@ class Tree:
                         )
             else:
                 node.time_left = node.time_needed 
+            node.failures = 0
  
     def get_root(self):
         return self.root
