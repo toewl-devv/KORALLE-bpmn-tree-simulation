@@ -10,7 +10,7 @@ A simple example is found below to get you started, or read further to understan
 import tree_simulation
 
 # then we can simply make Simulation object:
-simulation = tree_simulation.Simulation("diagram.bpmn", timescale=3)
+simulation = tree_simulation.Simulation("complexdiagram.bpmn", timescale=3)
 simulation.simulate()
 ```
 
@@ -18,10 +18,13 @@ simulation.simulate()
 * Each node must belong to exactly **one** layer.
 * There must be exactly **one** root node and **one** node for which it's depth is equal to the height of the diagram.
 * A node may not have more than one parent.
-* The text inside of a task must be in the form `name;t;var;capacity` where `t` is the time in seconds which the task will run for in the simulation, `var` is the variance of the time taken, and `capacity` is the maximum number of processes which may run the same task at once.
-* It follows that neither `t`, `var`, nor `capacity` may be negative.
+* The text inside of a task must be in the form `name;t;var;capacity;failchance` where:
+    * `t` $\geq 0$ is the time in seconds which the task will run for in the simulation, 
+    * `var` $\geq 0$ is the variance of the time taken (set to 0 for exact given time), 
+    * `capacity` $> 0$ is the maximum number of processes which may run the same task at once, and
+    * `failchance` $\in [0,1]$ is the probability that the task fails causing it to restart immediately.
   
-  Should the time be too long for a simulation, you can instead input the time in minutes, or hours etc. for the sake of the simulation.
+* Should the time be too long for a simulation, you can instead input the time in minutes, or hours etc. for the sake of the simulation.
 
 ## Detailed Usage
 First we must import the tree simulation library:
@@ -30,11 +33,11 @@ import tree_simulation as ts
 ```
 To create a simulation, we create an instance of the Simulation class:
 ```py
-my_simulation = ts.Simulation("diagram.bpmn")
+my_simulation = ts.Simulation("complexdiagram.bpmn")
 ```
 We can optionally give a value for the time scale (default 1):
 ```py
-my_simulation = ts.Simulation("diagram.bpmn", timescale=3)
+my_simulation = ts.Simulation("complexdiagram.bpmn", timescale=3)
 ```
 In this case, the simulation will run three times faster than usual when we start it.
 

@@ -143,7 +143,7 @@ class Simulation:
 
         # print simulation report
 
-        tree_lines, report_lines = self.print_tree_report()
+        tree_lines, report_lines = self._print_tree_report()
         tree_width = max(len(line) for line in tree_lines) + 4
         
         for line, fails in zip(tree_lines, report_lines):
@@ -155,7 +155,7 @@ class Simulation:
 
         input("press <enter> to quit")
 
-    def print_tree_report(self, node=None, level=0, prefix="├──"):
+    def _print_tree_report(self, node=None, level=0, prefix="├──"):
         if node is None:
             node = self.tree.root
 
