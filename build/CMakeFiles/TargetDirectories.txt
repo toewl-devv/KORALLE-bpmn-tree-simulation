@@ -1,3 +1,0 @@
-/Users/tal/Projects/python/KORALLE-bpmn-tree-simulation/build/CMakeFiles/buildtree.dir
-/Users/tal/Projects/python/KORALLE-bpmn-tree-simulation/build/CMakeFiles/edit_cache.dir
-/Users/tal/Projects/python/KORALLE-bpmn-tree-simulation/build/CMakeFiles/rebuild_cache.dir
