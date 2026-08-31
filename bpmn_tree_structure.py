@@ -174,7 +174,7 @@ class Tree:
         ]
 
         # colour in the stars depending which process is running
-        stars = "".join(mc.highlight_process("*", process) for process in processes)
+        stars = "".join(mc.highlight_process("*", process, n) for process in processes)
 
         # the indent to the whole tree is enough space to show all processes (length n)
         process_area = stars + " " * (n-len(processes))
