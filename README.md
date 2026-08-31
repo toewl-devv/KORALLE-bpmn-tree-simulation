@@ -14,7 +14,7 @@ simulation = tree_simulation.Simulation("complexdiagram.bpmn", timescale=3)
 simulation.simulate(visualise=True)
 ```
 
-![Video](media/video.mov)
+![examplevideo](media/video.mov)
 
 ## BPMN Diagram Constraints:
 * Each node must belong to exactly **one** layer.
@@ -35,11 +35,11 @@ import simulation
 ```
 To create a simulation, we create an instance of the Simulation class:
 ```py
-my_simulation = ts.Simulation("complexdiagram.bpmn")
+my_simulation = simulation.Simulation("complexdiagram.bpmn")
 ```
 We can optionally give values for the time scale (default 1), and a value for the number of processes `n` to run at once (default 1) along with the staggering time `t` between the processes (default 0):
 ```py
-my_simulation = ts.Simulation("complexdiagram.bpmn", n=6, t=1.0, timescale=3)
+my_simulation = simulation.Simulation("complexdiagram.bpmn", n=6, t=1.0, timescale=3)
 ```
 In this case, the simulation will run three times faster than usual when we start it.
 
