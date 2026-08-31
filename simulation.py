@@ -32,8 +32,9 @@ class Simulation():
             self.failures = {node.id: 0 for node in tree.get_nodes()}
             self.time_steps_taken = 0
             self.node_times_spent_waiting = {node.id: 0 for node in tree.get_nodes()}
+            self.event_log = []
 
-    def _step_simulation(self, current_running_nodes, simulated_trees, ends):
+    def _step_simulation(self, current_running_nodes, simulated_trees, ends, time=None):
         finished_nodes = [[] for _ in current_running_nodes]
 
         # Count how many processes are currently on each node
@@ -43,10 +44,10 @@ class Simulation():
             for running_node in process:
                 occupied[running_node.id] = occupied.get(running_node.id, 0) + 1
 
-        for process, tree, end, finished in zip(current_running_nodes, 
+        for i, (process, tree, end, finished) in enumerate(zip(current_running_nodes, 
                                                 simulated_trees, 
                                                 ends, 
-                                                finished_nodes):
+                                                finished_nodes)):
             for node in process:
                 if node == end[0]:
                     pass
@@ -55,12 +56,19 @@ class Simulation():
                     if random.random() < node.failure_chance:
                         node.time_left = node.time_needed
                         self.results.failures[node.id] += 1
+                        self.results.event_log.append(
+                                {"time": time, "process": i, "node": node.name, "event": "failure"}
+                                )
                     else:
                         if all(
                                 occupied.get(child.id, 0) < child.max_capacity
                                 for child in node.children
                                 ):
                             finished.append(node)
+                            if time:
+                                self.results.event_log.append(
+                                        {"time": time, "process": i, "node": node.name, "event": "end"}
+                                        )
 
                             # reserve one slot on every child
                             for child in node.children:
@@ -73,6 +81,10 @@ class Simulation():
             for node in finished:
                 process.remove(node)
                 process.extend(node.children)
+                for child in node.children:
+                    self.results.event_log.append(
+                            {"time": time, "process": i, "node": child.name, "event": "start"}
+                            )
 
     def simulate(self, visualise=False):
         simulated_trees = [deepcopy(self.tree) for _ in range(self.processes)]
@@ -100,7 +112,7 @@ class Simulation():
             if current_running_nodes == ends:
                 break
 
-            self._step_simulation(current_running_nodes, simulated_trees, ends)
+            self._step_simulation(current_running_nodes, simulated_trees, ends, time=time_step+1)
             time_step += 1
 
         # the loop is broken when all processes have reached the end

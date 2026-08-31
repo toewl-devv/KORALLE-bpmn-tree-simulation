@@ -11,8 +11,10 @@ import tree_simulation
 
 # then we can simply make Simulation object:
 simulation = tree_simulation.Simulation("complexdiagram.bpmn", timescale=3)
-simulation.simulate()
+simulation.simulate(visualise=True)
 ```
+
+![Video](media/video.mov)
 
 ## BPMN Diagram Constraints:
 * Each node must belong to exactly **one** layer.
@@ -29,39 +31,56 @@ simulation.simulate()
 ## Detailed Usage
 First we must import the tree simulation library:
 ```py
-import tree_simulation as ts
+import simulation
 ```
 To create a simulation, we create an instance of the Simulation class:
 ```py
 my_simulation = ts.Simulation("complexdiagram.bpmn")
 ```
-We can optionally give a value for the time scale (default 1):
+We can optionally give values for the time scale (default 1), and a value for the number of processes `n` to run at once (default 1) along with the staggering time `t` between the processes (default 0):
 ```py
-my_simulation = ts.Simulation("complexdiagram.bpmn", timescale=3)
+my_simulation = ts.Simulation("complexdiagram.bpmn", n=6, t=1.0, timescale=3)
 ```
 In this case, the simulation will run three times faster than usual when we start it.
 
 Now we can use other commands.
 ## Features of `Simulation`
-##### `simulate(n=1, t=0.0)`
-Runs the entire simulation for the given BPMN file. The current timestep is displayed at the top and currently active tasks are marked with an asterisk *.
+### The `Simulation` Object
+Upon creating a simulation, can access several parameters about it.
+#### Attributes
+##### `self.tree`
+The `Tree` object which is created from the given BPMN diagram. This object has its own functions tied to it too.
+##### `self.timescale`
+The given timescale, `1.0` if no timescale is given.
+##### `self.processes`
+The given number of processes `n`, `1` if no value is given.
+##### `self.stagger`
+The given staggering time of processes `t`, `0.0` if no value is given.
+##### `self.results`
+The [`results` object](#The-results-Object) contains data about the simulation which is filled in after the simulation is run with [`simulate()`](#simulate(visual=False)).
 
-`n` specifies the number of processes to run (default 1) and `t` specifies the time which the simulation should wait between starting consecutive processes (default 0).
-
-At the end of the simulation, a report of how the simulation went is shown.
-> TODO: make the report more insightful
+#### `simulate(visualise=False)`
+Runs a simulation of the current `Simulation` object. If `visualise` is true, a tree representation of the BPMN file will be shown. Currently active nodes will represented by a number of asterisks `*` corresponding to the number of processes currently running that node.
 
 > [!NOTE]
-> A simulation ran with the exact same input values may not always result in the same output, this is because the time it takes for tasks to run is randomised according to a normally distributed variable with mean and variance given in the BPMN diagram (see [constraints](#BPMN-Diagram-Constaints:)).
-##### `print_timestep(timestep, n=1, t=0.0)`
-Prints one point in time (timestep) of the full simulation. The given value `timestep` must be non-negative and less than the maximum timestep value.
+> A simulation ran with the exact same input values may not always result in the same output, this is because the time it takes for tasks to run is randomised according to a normally distributed variable with mean and variance given in the BPMN diagram (see [constraints](#BPMN-Diagram-Constaints)).
 
-`print_timestep` assumes tasks take their mean amount of time every time with no randomness.
+> [!NOTE]
+> If `visualise` is set to `True`, the console will be cleared before showing the simulation!
 
-##### `get_max_time(n=1, t=0.0)`
-Returns the maximum timestep reached in a simulation.
-
-`get_max_time` assumes tasks take their mean amount of time every time with no randomness.
+### The `results` Object
+#### Attributes
+##### `self.failures`
+A dictionary of each node ID and how many times that node failed during the simulation.
+##### `self.time_steps_taken`
+The total time steps which the simulation took to finish.
+##### `self.node_times_spent_waiting`
+A dictionary of each node ID and how many time steps it spent waiting to move on to the next node (this value is incremented every time the node is finished but it cannot move to the next node because it's capacity is full).
+##### `self.event_log`
+A list of dictionaries with data about the simulation.
+> [!TIP]
+> Use the `pandas` library if you plan on using the event log.
 
 # Roadmap
+
 
